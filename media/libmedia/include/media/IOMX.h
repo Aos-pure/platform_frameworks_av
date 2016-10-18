@@ -65,6 +65,7 @@ public:
         kPortModePresetEnd,
 
         kPortModeDynamicStart = 100,
+        kPortModeDynamicGrallocSource,  // [Legacy Camera HAL1] uses kMetadataBufferTypeGrallocSource
         kPortModeDynamicANWBuffer,      // uses metadata mode kMetadataBufferTypeANWBuffer
                                         // or kMetadataBufferTypeGrallocSource
         kPortModeDynamicNativeHandle,   // uses metadata mode kMetadataBufferTypeNativeHandleSource

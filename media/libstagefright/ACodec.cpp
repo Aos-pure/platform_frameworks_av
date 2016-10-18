@@ -860,6 +860,10 @@ status_t ACodec::allocateBuffersOnPort(OMX_U32 portIndex) {
                 bufSize = sizeof(VideoNativeMetadata);
             } else if (mode == IOMX::kPortModeDynamicNativeHandle) {
                 bufSize = sizeof(VideoNativeHandleMetadata);
+#if !defined(TARGET_USES_MEDIA_EXTENSIONS) && defined(TARGET_HAS_LEGACY_CAMERA_HAL1)
+            } else if (mode == IOMX::kPortModeDynamicGrallocSource) {
+                bufSize = sizeof(VideoGrallocMetadata);
+#endif
             }
 
             size_t conversionBufferSize = 0;
@@ -1754,9 +1758,16 @@ status_t ACodec::configureCodec(
         IOMX::PortMode mode;
         if (storeMeta == kMetadataBufferTypeNativeHandleSource) {
             mode = IOMX::kPortModeDynamicNativeHandle;
+#if !defined(TARGET_USES_MEDIA_EXTENSIONS) && defined(TARGET_HAS_LEGACY_CAMERA_HAL1)
+        } else if (storeMeta == kMetadataBufferTypeANWBuffer) {
+            mode = IOMX::kPortModeDynamicANWBuffer;
+        } else if (storeMeta == kMetadataBufferTypeGrallocSource) {
+            mode = IOMX::kPortModeDynamicGrallocSource;
+#else
         } else if (storeMeta == kMetadataBufferTypeANWBuffer ||
                 storeMeta == kMetadataBufferTypeGrallocSource) {
             mode = IOMX::kPortModeDynamicANWBuffer;
+#endif
         } else {
             return BAD_VALUE;
         }
@@ -5820,6 +5831,17 @@ void ACodec::BaseState::onInputBufferFilled(const sp<AMessage> &msg) {
                     }
                     break;
 #ifndef OMX_ANDROID_COMPILE_AS_32BIT_ON_64BIT_PLATFORMS
+#if !defined(TARGET_USES_MEDIA_EXTENSIONS) && defined(TARGET_HAS_LEGACY_CAMERA_HAL1)
+                case IOMX::kPortModeDynamicGrallocSource:
+                    if (info->mCodecData->size() >= sizeof(VideoGrallocMetadata)) {
+                        //VideoGrallocMetadata *vgmd =
+                        //    (VideoGrallocMetadata*)info->mCodecData->base();
+                        //native_handle_t* handle = (native_handle_t *)(uintptr_t)vgmd->pHandle;
+                        //err2 = mCodec->mOMXNode->emptyBuffer(
+                        //    bufferID, handle, flags, timeUs, info->mFenceFd);
+                    }
+                    break;
+#endif
                 case IOMX::kPortModeDynamicNativeHandle:
                     if (info->mCodecData->size() >= sizeof(VideoNativeHandleMetadata)) {
                         VideoNativeHandleMetadata *vnhmd =
