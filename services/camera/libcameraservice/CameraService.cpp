@@ -1128,6 +1128,17 @@ status_t CameraService::handleEvictionsLocked(const String8& cameraId, int clien
             evictedClients.push_back(i);
 
             // Log the clients evicted
+            ALOGE("EVICT device %s client held by package %s (PID"
+                    " %" PRId32 ", score %" PRId32 ", state %" PRId32 ")\n - Evicted by device %s client for"
+                    " package %s (PID %d, score %" PRId32 ", state %" PRId32 ")",
+                    i->getKey().string(), String8{clientSp->getPackageName()}.string(),
+                    i->getOwnerId(), i->getPriority().getScore(),
+                    i->getPriority().getState(), cameraId.string(),
+                    packageName.string(), clientPid,
+                    priorityScores[priorityScores.size() - 1],
+                    states[states.size() - 1]);
+
+            // Log the clients evicted
             logEvent(String8::format("EVICT device %s client held by package %s (PID"
                     " %" PRId32 ", score %" PRId32 ", state %" PRId32 ")\n - Evicted by device %s client for"
                     " package %s (PID %d, score %" PRId32 ", state %" PRId32 ")",
@@ -1864,6 +1875,13 @@ void CameraService::doUserSwitch(const std::vector<int32_t>& newUserIds) {
 
         ALOGE("Evicting conflicting client for camera ID %s due to user change",
                 i->getKey().string());
+        // Log the clients evicted
+        ALOGE("EVICT device %s client held by package %s (PID %"
+                PRId32 ", score %" PRId32 ", state %" PRId32 ")\n   - Evicted due"
+                " to user switch.", i->getKey().string(),
+                String8{clientSp->getPackageName()}.string(),
+                i->getOwnerId(), i->getPriority().getScore(),
+                i->getPriority().getState());
 
         // Log the clients evicted
         logEvent(String8::format("EVICT device %s client held by package %s (PID %"
